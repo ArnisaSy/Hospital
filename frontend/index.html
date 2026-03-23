@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Dashboard</title>
+</head>
+<body>
+
+<h1>Hospital Dashboard</h1>
+
+<button onclick="loadPatients()">Load Patients</button>
+
+<ul id="list"></ul>
+
+<script>
+function loadPatients() {
+    fetch('http://localhost:3000/patients')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            data.forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = p.name;
+                list.appendChild(li);
+            });
+        });
+}
+</script>
+
+</body>
+</html>
