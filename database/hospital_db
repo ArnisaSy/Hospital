@@ -1,0 +1,253 @@
+CREATE DATABASE hospital_db;
+USE hospital_db;
+
+
+CREATE TABLE Department (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(100) NOT NULL UNIQUE
+);
+
+
+CREATE TABLE Doctor (
+    DoctorID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Specialization VARCHAR(100),
+    DepartmentID INT,
+    CONSTRAINT FK_Doctor_Department
+        FOREIGN KEY (DepartmentID)
+        REFERENCES Department(DepartmentID)
+);
+
+CREATE TABLE Patient (
+    PatientID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    DateOfBirth DATE,
+    Gender VARCHAR(10),
+    Address VARCHAR(200)
+);
+
+
+CREATE TABLE Appointment (
+    AppointmentID INT PRIMARY KEY,
+    PatientID INT NOT NULL,
+    DoctorID INT NOT NULL,
+    VisitDate DATE NOT NULL,
+    CONSTRAINT FK_App_Patient
+        FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    CONSTRAINT FK_App_Doctor
+        FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+);
+
+
+
+CREATE TABLE Diagnosis (
+    DiagnosisID INT PRIMARY KEY,
+    AppointmentID INT NOT NULL,
+    DiagnosisName VARCHAR(200) NOT NULL,
+    CONSTRAINT FK_Diagnosis_Appointment
+        FOREIGN KEY (AppointmentID)
+        REFERENCES Appointment(AppointmentID)
+);
+
+
+CREATE TABLE Treatment (
+    TreatmentID INT PRIMARY KEY,
+    DiagnosisID INT NOT NULL,
+    TreatmentName VARCHAR(200) NOT NULL,
+    CONSTRAINT FK_Treatment_Diagnosis
+        FOREIGN KEY (DiagnosisID)
+        REFERENCES Diagnosis(DiagnosisID)
+);
+
+
+INSERT INTO Department VALUES (1,'Cardiology');
+INSERT INTO Department VALUES (2,'Neurology');
+INSERT INTO Department VALUES (3,'Pediatrics');
+INSERT INTO Department VALUES (4,'Orthopedics');
+INSERT INTO Department VALUES (5,'Dermatology');
+
+INSERT INTO Doctor VALUES (1,'Dr Arben','Cardiologist',1);
+INSERT INTO Doctor VALUES (2,'Dr Elira','Neurologist',2);
+INSERT INTO Doctor VALUES (3,'Dr Mentor','Pediatrician',3);
+INSERT INTO Doctor VALUES (4,'Dr Luan','Orthopedic',4);
+INSERT INTO Doctor VALUES (5,'Dr Sara','Dermatologist',5);
+INSERT INTO Doctor VALUES (6,'Dr Ilir','Cardiologist',1);
+INSERT INTO Doctor VALUES (7,'Dr Nora','Neurologist',2);
+INSERT INTO Doctor VALUES (8,'Dr Arta','Pediatrician',3);
+
+INSERT INTO Patient VALUES (1,'Ana Krasniqi','1999-05-10','F','Prishtine');
+INSERT INTO Patient VALUES (2,'Blerim Gashi','1985-03-22','M','Podujeve');
+INSERT INTO Patient VALUES (3,'Era Berisha','2015-09-01','F','Gjilan');
+INSERT INTO Patient VALUES (4,'Ardit Kelmendi','1990-04-12','M','Prizren');
+INSERT INTO Patient VALUES (5,'Lira Hoxha','2002-08-19','F','Ferizaj');
+INSERT INTO Patient VALUES (6,'Besnik Rama','1975-11-03','M','Peje');
+INSERT INTO Patient VALUES (7,'Elona Dervishi','1988-06-21','F','Gjakove');
+INSERT INTO Patient VALUES (8,'Jon Berisha','2018-02-14','M','Prishtine');
+INSERT INTO Patient VALUES (9,'Rina Haliti','1996-12-30','F','Mitrovice');
+INSERT INTO Patient VALUES (10,'Alban Morina','2000-09-09','M','Podujeve');
+
+INSERT INTO Appointment VALUES (1,1,1,'2026-02-10');
+INSERT INTO Appointment VALUES (2,2,2,'2026-02-11');
+INSERT INTO Appointment VALUES (3,3,3,'2026-02-12');
+INSERT INTO Appointment VALUES (4,4,4,'2026-02-13');
+INSERT INTO Appointment VALUES (5,5,5,'2026-02-14');
+INSERT INTO Appointment VALUES (6,6,6,'2026-02-15');
+INSERT INTO Appointment VALUES (7,7,7,'2026-02-16');
+INSERT INTO Appointment VALUES (8,8,8,'2026-02-17');
+INSERT INTO Appointment VALUES (9,9,1,'2026-02-18');
+INSERT INTO Appointment VALUES (10,10,2,'2026-02-19');
+INSERT INTO Appointment VALUES (11,1,6,'2026-02-20');
+INSERT INTO Appointment VALUES (12,2,7,'2026-02-21');
+
+INSERT INTO Diagnosis VALUES (1,1,'High Blood Pressure');
+INSERT INTO Diagnosis VALUES (2,2,'Migraine');
+INSERT INTO Diagnosis VALUES (3,3,'Flu');
+INSERT INTO Diagnosis VALUES (4,4,'Knee Injury');
+INSERT INTO Diagnosis VALUES (5,5,'Skin Allergy');
+INSERT INTO Diagnosis VALUES (6,6,'Heart Arrhythmia');
+INSERT INTO Diagnosis VALUES (7,7,'Chronic Headache');
+INSERT INTO Diagnosis VALUES (8,8,'Child Fever');
+INSERT INTO Diagnosis VALUES (9,9,'Hypertension');
+INSERT INTO Diagnosis VALUES (10,10,'Stress Migraine');
+INSERT INTO Diagnosis VALUES (11,11,'Chest Pain');
+INSERT INTO Diagnosis VALUES (12,12,'Nervous Fatigue');
+
+
+INSERT INTO Treatment VALUES (1,1,'Medication');
+INSERT INTO Treatment VALUES (2,2,'Painkillers');
+INSERT INTO Treatment VALUES (3,3,'Rest and Fluids');
+INSERT INTO Treatment VALUES (4,4,'Physical Therapy');
+INSERT INTO Treatment VALUES (5,5,'Antihistamines');
+INSERT INTO Treatment VALUES (6,6,'Heart Medication');
+INSERT INTO Treatment VALUES (7,7,'Pain Management');
+INSERT INTO Treatment VALUES (8,8,'Paracetamol');
+INSERT INTO Treatment VALUES (9,9,'Blood Pressure Drugs');
+INSERT INTO Treatment VALUES (10,10,'Relaxation Therapy');
+INSERT INTO Treatment VALUES (11,11,'ECG Monitoring');
+INSERT INTO Treatment VALUES (12,12,'Vitamin Therapy');
+
+SELECT COUNT(*) AS TotalPatients FROM Patient;
+SELECT COUNT(*) AS TotalDoctors FROM Doctor;
+SELECT COUNT(*) AS TotalAppointments FROM Appointment;
+
+SELECT p.Name AS Patient,
+       d.Name AS Doctor,
+       dep.DepartmentName,
+       dg.DiagnosisName,
+       t.TreatmentName
+FROM Patient p
+JOIN Appointment a ON p.PatientID = a.PatientID
+JOIN Doctor d ON a.DoctorID = d.DoctorID
+JOIN Department dep ON d.DepartmentID = dep.DepartmentID
+JOIN Diagnosis dg ON a.AppointmentID = dg.AppointmentID
+JOIN Treatment t ON dg.DiagnosisID = t.DiagnosisID;
+
+
+SELECT d.Name AS Doctor, COUNT(*) AS TotalVisits
+FROM Doctor d
+JOIN Appointment a ON d.DoctorID = a.DoctorID
+GROUP BY d.Name;
+
+SELECT d.Name, COUNT(*) AS TotalVisits
+FROM Doctor d
+JOIN Appointment a ON d.DoctorID = a.DoctorID
+GROUP BY d.Name
+HAVING COUNT(*) >= 1;
+
+
+SELECT p.Name
+FROM Patient p
+JOIN Appointment a ON p.PatientID = a.PatientID
+GROUP BY p.Name
+HAVING COUNT(*) >
+(
+  SELECT AVG(cnt)
+  FROM (
+      SELECT COUNT(*) AS cnt
+      FROM Appointment
+      GROUP BY PatientID
+  ) x
+);
+
+SELECT Name,
+CASE
+  WHEN YEAR(GETDATE()) - YEAR(DateOfBirth) < 18 THEN 'Minor'
+  WHEN YEAR(GETDATE()) - YEAR(DateOfBirth) BETWEEN 18 AND 65 THEN 'Adult'
+  ELSE 'Senior'
+END AS AgeGroup
+FROM Patient;
+
+SELECT p.Name AS Patient, d.Name AS Doctor, a.VisitDate
+FROM Appointment a
+JOIN Patient p ON a.PatientID = p.PatientID
+JOIN Doctor d ON a.DoctorID = d.DoctorID;
+
+SELECT p.Name, dep.DepartmentName
+FROM Appointment a
+JOIN Patient p ON a.PatientID = p.PatientID
+JOIN Doctor d ON a.DoctorID = d.DoctorID
+JOIN Department dep ON d.DepartmentID = dep.DepartmentID;
+
+SELECT p.Name
+FROM Patient p
+LEFT JOIN Appointment a ON p.PatientID = a.PatientID
+WHERE a.AppointmentID IS NULL;
+
+SELECT d.Name, COUNT(*) AS TotalVisits
+FROM Appointment a
+JOIN Doctor d ON a.DoctorID = d.DoctorID
+GROUP BY d.Name;
+
+
+SELECT TOP 3 d.Name, COUNT(*) AS TotalVisits
+FROM Appointment a
+JOIN Doctor d ON a.DoctorID = d.DoctorID
+GROUP BY d.Name
+ORDER BY COUNT(*) DESC;
+
+SELECT dep.DepartmentName, COUNT(dg.DiagnosisID) AS TotalDiagnoses
+FROM Diagnosis dg
+JOIN Appointment a ON dg.AppointmentID = a.AppointmentID
+JOIN Doctor d ON a.DoctorID = d.DoctorID
+JOIN Department dep ON d.DepartmentID = dep.DepartmentID
+GROUP BY dep.DepartmentName;
+
+SELECT p.Name, COUNT(*) AS Visits
+FROM Appointment a
+JOIN Patient p ON a.PatientID = p.PatientID
+GROUP BY p.Name
+HAVING COUNT(*) > 1;
+
+SELECT TreatmentName, COUNT(*) AS UsedTimes
+FROM Treatment
+GROUP BY TreatmentName
+ORDER BY UsedTimes DESC;
+
+SELECT DISTINCT p.Name
+FROM Patient p
+JOIN Appointment a ON p.PatientID = a.PatientID
+WHERE a.DoctorID IN (
+    SELECT DoctorID
+    FROM Doctor
+    WHERE Specialization = 'Cardiologist'
+);
+
+SELECT *
+FROM Appointment
+ORDER BY VisitDate DESC;
+
+SELECT Address, COUNT(*) AS TotalPatients
+FROM Patient
+GROUP BY Address;
+
+SELECT d.Name, COUNT(*) AS TotalAppointments
+FROM Doctor d
+JOIN Appointment a ON d.DoctorID = a.DoctorID
+GROUP BY d.Name
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*) AS TotalDiagnoses
+FROM Diagnosis;
+
+SELECT COUNT(*) AS TotalTreatments
+FROM Treatment;
