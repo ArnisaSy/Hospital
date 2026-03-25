@@ -2,29 +2,98 @@
 <html>
 <head>
     <title>Hospital Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
 
-<h1>Hospital Dashboard</h1>
+<body style="font-family: Arial; padding: 20px;">
 
-<button onclick="loadPatients()">Load Patients</button>
+<h1>🏥 Hospital Dashboard</h1>
 
-<ul id="list"></ul>
+<h2>📊 Stats</h2>
+<ul>
+    <li id="patients"></li>
+    <li id="doctors"></li>
+    <li id="appointments"></li>
+</ul>
+
+<button onclick="loadStats()">Load Stats</button>
+
+<hr>
+
+<h2>👨‍⚕️ Top Doctors</h2>
+<ul id="doctorList"></ul>
+<button onclick="loadDoctors()">Show Top Doctors</button>
+
+<hr>
+
+<h2>👥 Patients</h2>
+<ul id="patientList"></ul>
+<button onclick="loadPatients()">Show Patients</button>
+
+<hr>
+
+<h2>📈 Chart (Top Doctors)</h2>
+<canvas id="chart" width="400" height="200"></canvas>
 
 <script>
+
+function loadStats() {
+    fetch('http://localhost:3000/stats')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('patients').textContent = "Patients: " + data.patients;
+            document.getElementById('doctors').textContent = "Doctors: " + data.doctors;
+            document.getElementById('appointments').textContent = "Appointments: " + data.appointments;
+        });
+}
+
+function loadDoctors() {
+    fetch('http://localhost:3000/top-doctors')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('doctorList');
+            list.innerHTML = '';
+
+            let names = [];
+            let visits = [];
+
+            data.forEach(d => {
+                const li = document.createElement('li');
+                li.textContent = d.Name + " - " + d.TotalVisits + " visits";
+                list.appendChild(li);
+
+                names.push(d.Name);
+                visits.push(d.TotalVisits);
+            });
+
+            new Chart(document.getElementById('chart'), {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'Visits',
+                        data: visits
+                    }]
+                }
+            });
+        });
+}
+
 function loadPatients() {
     fetch('http://localhost:3000/patients')
         .then(res => res.json())
         .then(data => {
-            const list = document.getElementById('list');
+            const list = document.getElementById('patientList');
             list.innerHTML = '';
+
             data.forEach(p => {
                 const li = document.createElement('li');
-                li.textContent = p.name;
+                li.textContent = p.Name + " (" + p.Address + ")";
                 list.appendChild(li);
             });
         });
 }
+
 </script>
 
 </body>
